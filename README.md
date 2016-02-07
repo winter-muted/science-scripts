@@ -28,7 +28,7 @@ python install.py
 
 ## Descriptions
 
-batch-benchmark -> time various job sizes to find the best bang for y(our) buck.
+batch-benchmark -> time various job sizes to find the best bang for (y)our buck.
 
 batch-del -> delete all jobs you are currently running when mistakes are made.
 
