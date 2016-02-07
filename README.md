@@ -2,18 +2,29 @@
 A collection of scripts to help automate certain tasks common in HPC usage
 
 ## Installation
-Clone the repo to a directory of your choice
-```git clone https://www.github.com/winter-muted/science-links.git```
+Clone the repo to a directory of your choice:
+```
+git clone https://www.github.com/winter-muted/science-links.git
+```
 
 Run the install script
-`./install.sh` or `python install.py`
+```
+./install.sh
+``` or 
+```
+python install.py
+```
 
 Make the new commands available
-`source ~/.bashrc`
+```
+source ~/.bashrc
+```
 
 To stay up to date:
-`git pull --rebase origin master`
-`python install.py`
+```
+git pull --rebase origin master
+python install.py
+```
 
 
 ## Descriptions
