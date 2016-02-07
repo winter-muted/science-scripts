@@ -7,15 +7,14 @@ Clone the repo to a directory of your choice:
 git clone https://www.github.com/winter-muted/science-links.git
 ```
 
-Run the install script
+Run either install script:
 ```
 ./install.sh
-``` or 
-```
+or
 python install.py
 ```
 
-Make the new commands available
+Make the new commands available:
 ```
 source ~/.bashrc
 ```
