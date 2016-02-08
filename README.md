@@ -36,6 +36,5 @@ lab-stats -> query the database to see who is hogging the queue.
 
 ## Contribute
 To improve a script or add a new one, make a pull request.
-`pull code`
 
 New scripts must have a help interface.
