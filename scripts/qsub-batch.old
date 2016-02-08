@@ -1,0 +1,21 @@
+BASE=$1
+MAX=$2
+
+echo "Will submit the following jobs:"
+for (( i=1; i <= $MAX; i++ ))
+do
+	echo "$BASE$i.pbs"
+done
+
+read -p "Are you sure? " -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	for ((i=1; i <= $MAX; i++ ))
+	do
+		qsub $BASE$i.pbs
+	done
+	echo "Submitted jobs."
+else
+	echo "Did not submit jobs."
+fi
