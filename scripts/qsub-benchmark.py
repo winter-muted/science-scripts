@@ -3,6 +3,8 @@ import os
 import argparse
 import sys
 
+from subprocess import call
+
 class qsub_benchmark(object):
     """ A collection of methods that automate the boring task
         of analyzing code scaling on a cluster.  Used to determine
@@ -12,35 +14,39 @@ class qsub_benchmark(object):
 
     def __init__(self,opts):
         self.base_name = opts.executable
-        
+
         # use the provided max_nodes, or default to 8
-        if int(opts.n) != 0:
-            self.max_nodes = int(opts.n)
+        if opts.n is None:
+            self.max_nodes = 16
         else:
-            self.max_nodes = 4
+            self.max_nodes = int(opts.n)
         self.ppn = 16
-        
+
         self.mpi_cmd = "mpiexec -n"
         self.queue = "pmillett"
+        self.plot_out = self.base_name + '.jpg'
+        self.data_out = self.base_name + '.data'
 
     def generate_pbs(self):
         print "Specify any unique runtime options here.\n" \
-                "Some options are module loads and imports.\n" \
-                "->"
-        
+                "Some options are module loads and imports.\n"
+
+
         # store user pbs options line by line until blank line recieved
         header = []
         while True:
-            header.append(raw_input())
+            header.append(raw_input("> "))
             if header[-1] == "":
                 header.pop()
                 break
 
         # write pbs files to disk
+        self.filenames = []
         for i in range(self.ppn,(self.max_nodes+1)*self.ppn,self.ppn):
             out_file = str(i) + "-" + self.base_name
             filename = str(i) + "-" + self.base_name + ".pbs"
-            
+            self.filenames.append(filename)
+
             with open(filename,"w") as f:
                 f.write("#PBS -q %s\n" % (self.queue))
                 f.write("#PBS -l noddes=%s:ppn=%s\n" % (i,self.ppn))
@@ -51,7 +57,7 @@ class qsub_benchmark(object):
                 f.write("%s %s ./%s \n" % (self.mpi_cmd,i,self.base_name))
 
     def submit_pbs(self):
-        
+
         # will try to import an external batch submission script
         try:
             import universe # placeholder. we all know you cant "import universe"
@@ -63,18 +69,37 @@ class qsub_benchmark(object):
             print "Will submit the following jobs to queue %s:" % self.queue
             for i in range(self.ppn,(self.max_nodes+1)*self.ppn,self.ppn):
                 print "%s-%s.pbs" % (i,self.base_name)
-            a = raw_input("Continue? [Y/N]")
+
+            a = raw_input("Continue? [Y/N] ")
             if (a == 'y' or a == 'Y' or a == 'yes' or a == 'Yes'):
-                print "Submitted jobs."
-            else:
+                for file in self.filenames: # interate over the pbs files
+                    try:
+                        call(["qsub",str(file)])
+                    except:
+                        sys.exit("[ERR]qsub failure. are you in a job scheduling environment?")
+                print "[Submitted]"
+            else:   # don't submit now
                 print "Did not submit jobs."
-    
+
     def plot_results(self):
-        pass
+        data_call = ("here be dragons.")
+
+        plot_call = ("set title 'No. threads vs. walltime'\n"
+                   "set xlabel 'No. threads'\n"
+                   "set ylabel 'Log Walltime (s)'\n"
+                   "set logscale y\n"
+                   "set term jpeg size 1024,768\n"
+                   "set output %s\n"
+                   "plot %s using 1:2 lt 1 pt 4 ps 2 with linespoints"
+                   % (self.plot_out,self.data_out))
+
+
+        call(["echo",data_call])
+        call(["echo",plot_call])
 
 
 def parse_args():
-    """ 
+    """
     Implemented here is the argument parser.  The help interface is
     automatically produced by the argparser library
     """
@@ -106,6 +131,6 @@ def main():
         handle.plot_results()
     else:
         sys.exit('Specify either generate(g) or plot(p).')
-    
+
 if __name__ == '__main__':
     main()

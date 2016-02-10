@@ -1,13 +1,17 @@
-# This is python 2 code :(
+#!/usr/bin/python2
 import os # from universe import everything...
 import inspect
 import shutil
 import errno
+import sys
 
 class Installer(object):
     def __init__(self):
         self.run_dir = os.path.dirname(os.path.realpath(__file__)) # __file__ namespace
         self.install_dir = os.environ['HOME'] + "/.bin/"
+
+
+        self.short_circuit()
 
     def who_called(self):
         return inspect.stack()[2][3]
@@ -32,7 +36,8 @@ class Installer(object):
         #         shutil.copy(script_dir, self.install_dir)
         #     else:
         #         print('Directory not copied. Error: %s' % e)
-
+    def short_circuit(self):
+        sys.exit("Python installer not finished. Use install.sh")
 
 
     def message(self,message):
@@ -44,7 +49,7 @@ class Installer(object):
         elif (caller == 'add_path'):
             print "[ENV] " + message
         else:
-            os.exit('Unhandled exception in message()!')
+            sys.exit('Unhandled exception in message()!')
 
 
 
