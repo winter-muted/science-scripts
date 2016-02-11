@@ -2,8 +2,10 @@
 import os
 import argparse
 import sys
+import re
 
-from subprocess import call
+# from subprocess import call,Popen,communicate
+import subprocess
 
 class qsub_benchmark(object):
     """ A collection of methods that automate the boring task
@@ -13,7 +15,6 @@ class qsub_benchmark(object):
     """
 
     def __init__(self,opts):
-        self.base_name = opts.executable
 
         # use the provided max_nodes, or default to 8
         if opts.n is None:
@@ -24,8 +25,21 @@ class qsub_benchmark(object):
 
         self.mpi_cmd = "mpiexec -n"
         self.queue = "pmillett"
-        self.plot_out = self.base_name + '.jpg'
-        self.data_out = self.base_name + '.data'
+
+        # do alll this nasty string stuff
+        self.base_name = opts.executable
+        self.plot_output = self.base_name + '.jpg'
+        self.data_output = self.base_name + '.data'
+        self.generate_interal_file_lists()
+
+    def generate_interal_file_lists(self):
+        self.pbs_filenames = []
+        self.data_filenames = []
+        for i in range(self.ppn,(self.max_nodes+1)*self.ppn,self.ppn):
+            pbs_file = str(i) + '-' + self.base_name + '.pbs'
+            data_file = str(i) + '-' + self.base_name + '.data'
+            self.pbs_filenames.append(pbs_file)
+            self.data_filenames.append(data_file)
 
     def generate_pbs(self):
         print "Specify any unique runtime options here.\n" \
@@ -41,20 +55,15 @@ class qsub_benchmark(object):
                 break
 
         # write pbs files to disk
-        self.filenames = []
-        for i in range(self.ppn,(self.max_nodes+1)*self.ppn,self.ppn):
-            out_file = str(i) + "-" + self.base_name
-            filename = str(i) + "-" + self.base_name + ".pbs"
-            self.filenames.append(filename)
-
+        for i,filename in enumerate(self.pbs_filenames):
             with open(filename,"w") as f:
                 f.write("#PBS -q %s\n" % (self.queue))
-                f.write("#PBS -l noddes=%s:ppn=%s\n" % (i,self.ppn))
+                f.write("#PBS -l nodes=%s:ppn=%s\n" % (i+1,self.ppn))
                 f.write("#PBS -l walltime=1:00:00\n")
-                f.write("#PBS -o %s\n" % (out_file))
+                f.write("#PBS -o %s\n" % (self.data_filenames[i]))
                 for elem in header:
                     f.write("%s\n" % elem)
-                f.write("%s %s ./%s \n" % (self.mpi_cmd,i,self.base_name))
+                f.write("%s %s ./%s \n" % (self.mpi_cmd,(i+1)*self.ppn,self.base_name))
 
     def submit_pbs(self):
 
@@ -72,9 +81,9 @@ class qsub_benchmark(object):
 
             a = raw_input("Continue? [Y/N] ")
             if (a == 'y' or a == 'Y' or a == 'yes' or a == 'Yes'):
-                for file in self.filenames: # interate over the pbs files
+                for file in self.pbs_filenames: # interate over the pbs files
                     try:
-                        call(["qsub",str(file)])
+                        subprocess.call(["qsub",str(file)])
                     except:
                         sys.exit("[ERR]qsub failure. are you in a job scheduling environment?")
                 print "[Submitted]"
@@ -82,21 +91,46 @@ class qsub_benchmark(object):
                 print "Did not submit jobs."
 
     def plot_results(self):
-        data_call = ("here be dragons.")
+
+        # Complicated but safe-ish reading of results
+        walltimes = [0] * self.max_nodes
+        for i,file in enumerate(self.data_filenames):
+            try:
+                f = open(file,'r')
+            except:
+                print "[WARN] Could not open %s" % (fil
+            lines = f.readlines()
+            for line in lines:
+                print line
+                expr = re.search('Resources Used:',line)
+                print exp.group(0)
+            try:
+                walltimes[i] = expr.group(0).strip('walltime=')
+            except:
+                print "[WARN] Didn't find a walltime for run size %s" %((i+1)*self.ppn)
+e)
+        # print walltimes
+
+        # print results into a file for later usage
+        with open(self.data_output,'w') as f:
+            for i,elem in enumerate(walltimes):
+                f.write("%s %s\n" % (self.ppn*(i+1),walltimes[i]))
 
         plot_call = ("set title 'No. threads vs. walltime'\n"
                    "set xlabel 'No. threads'\n"
                    "set ylabel 'Log Walltime (s)'\n"
-                   "set logscale y\n"
-                   "set term jpeg size 1024,768\n"
-                   "set output %s\n"
-                   "plot %s using 1:2 lt 1 pt 4 ps 2 with linespoints"
-                   % (self.plot_out,self.data_out))
+                   #"set logscale y\n"
+                #    "set term jpeg size 1024,768\n"
+                #    "set output '%s'\n"
+                    "set term dumb\n"
+                   "plot '%s' using 1:2 lt 1 pt 4 ps 2 with linespoints"
+                #    % (self.plot_output,self.data_output))
+                %(self.data_output))
 
-
-        call(["echo",data_call])
-        call(["echo",plot_call])
-
+        # with open("plot.gp",'w') as f:
+        #     f.write(plot_call)
+        # os.system('gnuplot plot.gp')
+        # os.remove('plot.gp')
 
 def parse_args():
     """
@@ -128,6 +162,7 @@ def main():
         handle.generate_pbs()
         handle.submit_pbs()
     elif opts.p:
+        # handle.generate_pbs()
         handle.plot_results()
     else:
         sys.exit('Specify either generate(g) or plot(p).')
