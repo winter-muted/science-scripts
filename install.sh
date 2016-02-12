@@ -15,19 +15,20 @@ else
 	mkdir $INSTALL_DIR
 fi
 
-# install scripts
+# install scripts and make them executable (pray)
 echo "[CPY]: Writing all scripts to install dir"
 cd $SCRIPT_DIR/scripts
 cp * $INSTALL_DIR
 cd $SCRIPT_DIR
-
+chmod u+x $INSTALL_DIR/*
 # Make sure $INSTALL_DIR is in $PATH
 # apparently, .bash_profile is the proper location for path additions
+# for now, we are sticking with .bashrc
 if [ `echo $PATH | grep $INSTALL_DIR` ]; then
 	echo "[ENV]: Install dir in path"
 else
-	echo "[ENV]: Now add install dir to ~/.bash_profile:"
-	echo -n '<code> echo '\''PATH=$PATH:' && echo "$INSTALL_DIR' >> ~/.bash_profile </code>"
+	echo "[ENV]: Now add install dir to ~/.bashrc:"
+	echo -n '<code> echo '\''PATH=$PATH:' && echo "$INSTALL_DIR' >> ~/.bashrc </code>"
 
 fi
 
