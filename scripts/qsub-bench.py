@@ -25,6 +25,7 @@ class qsub_benchmark(object):
 
         self.mpi_cmd = "mpiexec -n"
         self.queue = "pmillett"
+        
 
         # do alll this nasty string stuff
         self.base_name = opts.executable
@@ -90,47 +91,66 @@ class qsub_benchmark(object):
             else:   # don't submit now
                 print "Did not submit jobs."
 
-    def plot_results(self):
+    def plot_results(self,opts):
 
         # Complicated but safe-ish reading of results
         walltimes = [0] * self.max_nodes
-        for i,file in enumerate(self.data_filenames):
+        for i, file in enumerate(self.data_filenames):
             try:
                 f = open(file,'r')
             except:
-                print "[WARN] Could not open %s" % (fil
-            lines = f.readlines()
-            for line in lines:
-                print line
-                expr = re.search('Resources Used:',line)
-                print exp.group(0)
-            try:
-                walltimes[i] = expr.group(0).strip('walltime=')
-            except:
-                print "[WARN] Didn't find a walltime for run size %s" %((i+1)*self.ppn)
-e)
-        # print walltimes
-
+                print "[WARN] Could not open %s" % (file)
+            while True:
+                line = f.readline()
+                if not line: break
+                expr = re.match('Resources Used:.*',line)
+                if expr:
+                    walltimes[i] =  expr.group(0).partition('walltime=')[-1]
+        
+        formatted_walltimes = [0] * self.max_nodes
+        for i, elem in enumerate(walltimes):
+           try:
+                days,hours,minutes = walltimes[i].split(':')
+                formatted_walltimes[i] = str(int(days)*3600 + int(hours)*60 + int(minutes))
+           except:
+                pass
         # print results into a file for later usage
         with open(self.data_output,'w') as f:
-            for i,elem in enumerate(walltimes):
-                f.write("%s %s\n" % (self.ppn*(i+1),walltimes[i]))
+            for i,elem in enumerate(formatted_walltimes):
+                f.write("%s %s\n" % (self.ppn*(i+1),formatted_walltimes[i]))
 
         plot_call = ("set title 'No. threads vs. walltime'\n"
                    "set xlabel 'No. threads'\n"
                    "set ylabel 'Log Walltime (s)'\n"
                    #"set logscale y\n"
-                #    "set term jpeg size 1024,768\n"
-                #    "set output '%s'\n"
-                    "set term dumb\n"
+                   "set term jpeg size 1024,768\n"
+                   "set output '%s'\n"
                    "plot '%s' using 1:2 lt 1 pt 4 ps 2 with linespoints"
-                #    % (self.plot_output,self.data_output))
-                %(self.data_output))
+                    % (self.plot_output,self.data_output))
 
-        # with open("plot.gp",'w') as f:
-        #     f.write(plot_call)
-        # os.system('gnuplot plot.gp')
-        # os.remove('plot.gp')
+        with open("plot.gp",'w') as f:
+            f.write(plot_call)
+        os.system('gnuplot plot.gp')
+        os.remove('plot.gp')
+        
+        if not opts.s: # dumb term output
+            plot_call = ("set title 'No. threads vs. walltime'\n"
+                        "set xlabel 'No. threads'\n"
+                        "set ylabel 'Log Walltime (s)'\n"
+                       # "set logscale y\n"
+                       # "set term jpeg size 1024,768\n"
+                       # "set output '%s'\n"
+                        "set term dumb\n"
+                        "plot '%s' using 1:2 lt 1 pt 4 ps 2 with linespoints"
+                       # % (self.plot_output,self.data_output))
+                        %(self.data_output))
+
+            with open("plot.gp",'w') as f:
+                f.write(plot_call)
+            os.system('gnuplot plot.gp')
+            os.remove('plot.gp')
+         
+
 
 def parse_args():
     """
@@ -162,8 +182,7 @@ def main():
         handle.generate_pbs()
         handle.submit_pbs()
     elif opts.p:
-        # handle.generate_pbs()
-        handle.plot_results()
+        handle.plot_results(opts)
     else:
         sys.exit('Specify either generate(g) or plot(p).')
 
