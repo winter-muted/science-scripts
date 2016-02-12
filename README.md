@@ -11,7 +11,7 @@ _Run either install script:_
 ```
 ./install.sh
 _or_
-python install.py
+python install.py ( not yet implemented 2/11 )
 ```
 
 _Make the new commands available:_
@@ -28,13 +28,15 @@ python install.py
 
 ## Descriptions
 
-batch-benchmark -> time various job sizes to find the best bang for (y)our buck.
+qsub-bench -> time various job sizes to find the best bang for (y)our buck. (BETA!!)
 
-batch-del -> delete all jobs you are currently running when mistakes are made.
+qsub-batch -> batch submission of pbs files. (BETA!!)
 
-lab-stats -> query the database to see who is hogging the queue.
+del-batch -> delete jobs you are currently running when mistakes are made. (not implemented yet)
+
+lab-stats -> query the database to see who is hogging the queue. (not implemented yet)
 
 ## Contribute
-To improve a script or add a new one, make a pull request.
+To improve a script or add a new one, make a pull request. It is recommended that you use a devel branch.
 
 New scripts must have a help interface.
