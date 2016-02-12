@@ -19,6 +19,8 @@ _Make the new commands available:_
 source ~/.bashrc
 ```
 
+Now type the command's name to run it.
+
 _To stay up to date:_
 ```
 git pull --rebase origin master
@@ -28,9 +30,9 @@ python install.py
 
 ## Descriptions
 
-qsub-bench -> time various job sizes to find the best bang for (y)our buck. (BETA!!)
+qsub-bench.py -> time various job sizes to find the best bang for (y)our buck. (BETA!!)
 
-qsub-batch -> batch submission of pbs files. (BETA!!)
+qsub-batch.py -> batch submission of pbs files. (BETA!!)
 
 del-batch -> delete jobs you are currently running when mistakes are made. (not implemented yet)
 
