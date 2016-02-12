@@ -14,7 +14,7 @@ _or_
 python install.py ( not yet implemented 2/11 )
 ```
 
-_Make the new commands available:_
+_The install script appends the install dir (default ~/.bin) to your path. Make it available:_
 ```
 source ~/.bashrc
 ```
@@ -24,7 +24,7 @@ Now type the command's name to run it.
 _To stay up to date:_
 ```
 git pull --rebase origin master
-python install.py
+./install.sh
 ```
 
 
