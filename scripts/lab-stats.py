@@ -79,14 +79,15 @@ def get_results(date,database_file):
     return data
 
 
-def show_usage():
+def show_usage(date_range):
     """
-    Show a summary of usage described in a database file
+    Show a summary of usage described in a database file from a time range
     Generate a bar graph of user and jobs run for different time periods
+    Each user-day is an entry on the bar graph, sorted by user then day
     """
     import numpy as np
     from matplotlib import pyplot as plt
-    # get the run history data
+    # get the run history data for each day in range
     data = get_results("2016-04-08","data.db")
     data.sort(key=lambda tup: tup[1],reverse=True)
     N = len(data)
@@ -101,16 +102,23 @@ def show_usage():
     ax.set_xticks(ind)
     xtickNames = ax.set_xticklabels(xTickMarks)
     plt.setp(xtickNames,rotation=90,fontsize=12)
+    
 
-    plt.show()
-
+    return fig
 
 
 
 opts = parse_args()
 # results = query_queue("med16core")
 # store_results(results,"data.db")
-show_usage()
+date_range = ['2016-04-01','2016-04-08']
+fig = show_usage(date_range)
+
+figures = []
+
+
+fig.savefig('output.png')
+
 
 # if not bool(opts.c) != bool(opts.a): #XOR
 #     sys.exit("Must Specify either -c or -a")
