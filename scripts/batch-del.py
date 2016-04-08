@@ -9,7 +9,7 @@ def parse_args():
     Arg parser to handle command line options.
     """
     parser = argparse.ArgumentParser(description='\
-                Dielete an array of jobs using regular expressions.')
+                Delete an array of jobs using regular expressions.')
     parser.add_argument('-a',action='store_true',help='Delete all jobs currenly running for your user')
 
     parser.add_argument('-r',action='store',help='Regular expression of job description to match')
@@ -43,7 +43,7 @@ def get_running_jobs():
         sys.exit("There are no jobs currently running for user.")
 
     ret = ret.split('\n')
-   
+
     for i in range(5): # delete the first lines as junk
         ret.pop(0)
     ret.pop() # delete the final newline
@@ -62,25 +62,25 @@ def parse_regex(jobs,regex):
     """
     Match a regex to a list of strings in jobs
     """
-    
+
     # loop through each job and try to match regex
     matches = []
     for job in jobs:
         if re.match(regex,job['name']):
             matches.append(job)
             print "[RE] Matched %s (%s)" % (job['name'],job['id'])
-    
+
     return matches
 
 
 def main():
     opts = parse_args()
-   
+
     # build the job list
     jobs = get_running_jobs()
 
     # decide which jobs to terminate
-    
+
     if opts.a: # delete all running jobs
         print "[DEL] Deleting all currently running jobs."
         for job in jobs:
@@ -99,4 +99,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
