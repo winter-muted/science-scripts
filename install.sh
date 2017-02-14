@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# this
 
 SCRIPT_DIR=`echo $PWD`
 INSTALL_DIR=`echo $HOME/.bin`
